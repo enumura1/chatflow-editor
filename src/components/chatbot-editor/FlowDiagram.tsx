@@ -63,21 +63,21 @@ const FlowDiagram: React.FC<FlowDiagramProps> = ({
     const { node, depth, children } = item;
     
     return (
-      <div key={node.id} className="flex flex-col">
+      <div key={node.id} className="flex flex-col mb-6">
         <div className="flex items-start">
           {/* インデントと接続線 */}
           {depth > 0 && (
             <>
               {Array(depth).fill(0).map((_, i) => (
-                <div key={i} className={`w-8 ${i < depth - 1 ? 'border-l-2 border-gray-300' : ''}`}></div>
+                <div key={i} className={`w-8 ${i < depth - 1 ? 'border-l-2 border-gray-400' : ''}`}></div>
               ))}
-              <div className="w-4 h-6 border-b-2 border-l-2 border-gray-300 mr-2"></div>
+              <div className="w-8 h-8 border-b-4 border-l-4 border-gray-400 mr-2"></div>
             </>
           )}
           
           {/* ノード */}
           <div 
-            className={`px-4 py-2 rounded-lg shadow cursor-pointer mb-1
+            className={`px-4 py-2 rounded-lg shadow cursor-pointer
               ${currentNodeId === node.id ? 'bg-blue-100 border-2 border-blue-500' : 'bg-white border border-gray-200'}`}
             style={{ minWidth: '180px' }}
             onClick={() => onNodeSelect(node.id)}
@@ -94,11 +94,10 @@ const FlowDiagram: React.FC<FlowDiagramProps> = ({
           </div>
         </div>
         
-        {/* 子ノードを再帰的にレンダリング */}
         {children.length > 0 && (
-          <div className="flex flex-col ml-8">
-          {children.map(child => renderNode(child))}
-        </div>
+          <div className="flex flex-col ml-8 mt-2">
+            {children.map(child => renderNode(child))}
+          </div>
         )}
       </div>
     );
