@@ -1,4 +1,4 @@
-import { ChatbotFlow, NodePositions } from "../../types/chatbot";
+import { ChatbotFlow, ChatNode, NodePositions } from "../../types/chatbot";
 
 // Generate a new unique ID for a node
 export const generateNewId = (flow: ChatbotFlow): number => {
@@ -13,44 +13,37 @@ export const generateNodePositions = (flow: ChatbotFlow): NodePositions => {
   
   if (!rootNode) return positions;
   
-  // Position root node at the top center
-  positions[rootNode.id] = { x: 150, y: 40 };
+  // ノードマップの作成
+  const nodeMap = flow.reduce((map, node) => {
+    map[node.id] = node;
+    return map;
+  }, {} as Record<number, ChatNode>);
   
-  // Map to track visited nodes to avoid cycles
+  // 訪問済みノードを追跡
   const visited = new Set<number>();
   
-  // Recursive function to position nodes
-  const positionNodes = (nodeId: number, level: number, index: number, totalSiblings: number) => {
+  // 再帰的にノードの位置を計算する関数
+  const calculatePositions = (nodeId: number, depth: number, index: number) => {
     if (visited.has(nodeId)) return;
     visited.add(nodeId);
     
-    const node = flow.find(n => n.id === nodeId);
+    const node = nodeMap[nodeId];
     if (!node) return;
     
-    // Position based on level and index
-    const levelY = 40 + level * 110;
-    let levelX;
+    // 階層表示のための位置計算
+    const yPos = depth * 70;  // 垂直間隔
+    const xPos = index * 30;  // 水平間隔（実際には使用されない）
     
-    if (level === 0) {
-      levelX = 150; // Root at center
-    } else {
-      const width = 400;
-      const step = width / (totalSiblings + 1);
-      levelX = step * (index + 1);
-    }
+    positions[nodeId] = { x: xPos, y: yPos };
     
-    positions[nodeId] = { x: levelX, y: levelY };
-    
-    // Position children
-    if (node.options.length > 0) {
-      node.options.forEach((opt, idx) => {
-        positionNodes(opt.nextId, level + 1, idx, node.options.length);
-      });
-    }
+    // 子ノードの位置を計算
+    node.options.forEach((opt, idx) => {
+      calculatePositions(opt.nextId, depth + 1, index + idx);
+    });
   };
   
-  // Start positioning from root
-  positionNodes(rootNode.id, 0, 0, 1);
+  // ルートノードから計算開始
+  calculatePositions(rootNode.id, 0, 0);
   
   return positions;
 };

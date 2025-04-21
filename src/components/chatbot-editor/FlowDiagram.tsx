@@ -1,5 +1,4 @@
-import React from 'react';
-import { ChatbotFlow, NodePositions } from '../../types/chatbot';
+import { ChatbotFlow, ChatNode, NodePositions } from '../../types/chatbot';
 
 interface FlowDiagramProps {
   flow: ChatbotFlow;
@@ -8,86 +7,108 @@ interface FlowDiagramProps {
   onNodeSelect: (nodeId: number) => void;
 }
 
+// 階層構造のノードを表すインターフェース
+interface TreeNode {
+  node: ChatNode;
+  depth: number;
+  index: number;
+  children: TreeNode[];
+}
+
 const FlowDiagram: React.FC<FlowDiagramProps> = ({
   flow,
-  nodePositions,
   currentNodeId,
   onNodeSelect
 }) => {
-  return (
-    <div className="relative h-96 bg-gray-50 rounded-lg p-4 overflow-auto">
-      {/* ノードを表示 */}
-      {flow.map((node) => (
-        <div 
-          key={node.id}
-          className={`absolute px-4 py-2 rounded-lg shadow cursor-pointer transition-all
-            ${currentNodeId === node.id ? 'bg-blue-100 border-2 border-blue-500' : 'bg-white border border-gray-200'}`}
-          style={{ 
-            left: `${nodePositions[node.id]?.x}px`, 
-            top: `${nodePositions[node.id]?.y}px`,
-            minWidth: '120px'
-          }}
-          onClick={() => onNodeSelect(node.id)}
-        >
-          <div className="text-sm font-medium">ノード {node.id}</div>
-          <div className="text-xs truncate max-w-40">{node.title}</div>
-        </div>
-      ))}
+  // 階層構造を構築する関数
+  const buildHierarchy = (): TreeNode | null => {
+    const rootNode = flow.find(node => node.id === 1);
+    if (!rootNode) return null;
+    
+    // ノードIDからノードを取得するマップを作成
+    const nodeMap = flow.reduce<Record<number, ChatNode>>((map, node) => {
+      map[node.id] = node;
+      return map;
+    }, {});
+    
+    // 訪問済みノードを追跡して循環参照を防ぐ
+    const visited = new Set<number>();
+    
+    // 階層構造を再帰的に構築する関数
+    const buildNodeTree = (nodeId: number, depth: number, index: number): TreeNode | null => {
+      // 循環参照チェック
+      if (visited.has(nodeId)) return null;
+      visited.add(nodeId);
       
-      {/* 接続線と矢印を描画 */}
-      <svg className="absolute inset-0 w-full h-full pointer-events-none">
-        {flow.map((node) => 
-          node.options.map((option) => {
-            if (nodePositions[node.id] && nodePositions[option.nextId]) {
-              const startX = nodePositions[node.id].x + 60;
-              const startY = nodePositions[node.id].y + 30;
-              const endX = nodePositions[option.nextId].x + 60;
-              const endY = nodePositions[option.nextId].y;
-              
-              // Calculate control point for curve
-              const controlX = (startX + endX) / 2;
-              const controlY = startY + (endY - startY) / 3;
-              
-              // Arrow path definition
-              const path = `M ${startX} ${startY} Q ${controlX} ${controlY}, ${endX} ${endY}`;
-              
-              // Calculate arrow head position
-              const dx = endX - controlX;
-              const dy = endY - controlY;
-              const angle = Math.atan2(dy, dx);
-              const arrowLength = 10;
-              
-              const arrowX1 = endX - arrowLength * Math.cos(angle - Math.PI/6);
-              const arrowY1 = endY - arrowLength * Math.sin(angle - Math.PI/6);
-              const arrowX2 = endX - arrowLength * Math.cos(angle + Math.PI/6);
-              const arrowY2 = endY - arrowLength * Math.sin(angle + Math.PI/6);
-              
-              return (
-                <g key={`${node.id}-${option.nextId}`}>
-                  <path 
-                    d={path} 
-                    fill="none" 
-                    stroke="#888" 
-                    strokeWidth="2"
-                  />
-                  <polygon 
-                    points={`${endX},${endY} ${arrowX1},${arrowY1} ${arrowX2},${arrowY2}`}
-                    fill="#888"
-                  />
-                  <text 
-                    x={controlX} 
-                    y={controlY - 5} 
-                    className="text-xs fill-gray-600"
-                  >
-                    {option.label.length > 15 ? `${option.label.slice(0, 15)}...` : option.label}
-                  </text>
-                </g>
-              );
-            }
-            return null;
-          })
+      const node = nodeMap[nodeId];
+      if (!node) return null;
+      
+      const children = node.options
+        .map((option, idx) => buildNodeTree(option.nextId, depth + 1, idx))
+        .filter((child): child is TreeNode => child !== null);
+      
+      return {
+        node,
+        depth,
+        index,
+        children
+      };
+    };
+    
+    return buildNodeTree(rootNode.id, 0, 0);
+  };
+  
+  // 階層構造からノードを再帰的にレンダリングする関数
+  const renderNode = (item: TreeNode): React.ReactElement => {
+    const { node, depth, children } = item;
+    
+    return (
+      <div key={node.id} className="flex flex-col">
+        <div className="flex items-start">
+          {/* インデントと接続線 */}
+          {depth > 0 && (
+            <>
+              {Array(depth).fill(0).map((_, i) => (
+                <div key={i} className={`w-8 ${i < depth - 1 ? 'border-l-2 border-gray-300' : ''}`}></div>
+              ))}
+              <div className="w-4 h-6 border-b-2 border-l-2 border-gray-300 mr-2"></div>
+            </>
+          )}
+          
+          {/* ノード */}
+          <div 
+            className={`px-4 py-2 rounded-lg shadow cursor-pointer mb-1
+              ${currentNodeId === node.id ? 'bg-blue-100 border-2 border-blue-500' : 'bg-white border border-gray-200'}`}
+            style={{ minWidth: '180px' }}
+            onClick={() => onNodeSelect(node.id)}
+          >
+            <div className="text-sm font-medium">ノード {node.id}</div>
+            <div className="text-xs truncate max-w-40">{node.title}</div>
+            {node.options.length > 0 && (
+              <div className="text-xs text-gray-500 mt-1">
+                {node.options.map((option, optIdx) => (
+                  <div key={optIdx} className="truncate">{option.label} → ノード {option.nextId}</div>
+                ))}
+              </div>
+            )}
+          </div>
+        </div>
+        
+        {/* 子ノードを再帰的にレンダリング */}
+        {children.length > 0 && (
+          <div className="flex flex-col ml-8">
+          {children.map(child => renderNode(child))}
+        </div>
         )}
-      </svg>
+      </div>
+    );
+  };
+  
+  const hierarchy = buildHierarchy();
+  
+  return (
+    <div className="bg-gray-50 rounded-lg p-4 overflow-auto h-96">
+      {hierarchy && renderNode(hierarchy)}
     </div>
   );
 };
