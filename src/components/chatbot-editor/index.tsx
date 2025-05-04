@@ -5,7 +5,7 @@ import ChatPreview from './ChatPreview';
 import AddNodeDialog from './dialogs/AddNodeDialog';
 import EditOptionDialog from './dialogs/EditOptionDialog';
 import ImportDialog from './dialogs/ImportDialog';
-import { generateNodePositions, generateNewId, exportFlowToFile } from './utils';
+import { generateNodePositions, generateNewId, exportFlowToFile, updateFlowWithHierarchyPaths } from './utils';
 import { ChatbotFlow, ChatNode } from '../../types/chatbot';
 import { Button } from '@/components/ui/button';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
@@ -19,28 +19,38 @@ const initialFlow: ChatbotFlow = [
       { label: "node1 label", nextId: 2 },
       { label: "node2 label", nextId: 3 },
       { label: "node3 label", nextId: 4 }
-    ]
+    ],
+    hierarchyPath: "1"
   },
   {
     id: 2,
     title: "node2 title",
-    options: []
+    options: [],
+    parentId: 1,
+    hierarchyPath: "1-1"
   },
   {
     id: 3,
     title: "node3 title",
-    options: []
+    options: [],
+    parentId: 1,
+    hierarchyPath: "1-2"
   },
   {
     id: 4,
     title: "node4 title",
-    options: []
+    options: [],
+    parentId: 1,
+    hierarchyPath: "1-3"
   }
 ];
 
 const ChatbotEditor: React.FC = () => {
+  // useStateの前に初期フローを階層パスで更新
+  const hierarchicalInitialFlow = updateFlowWithHierarchyPaths(initialFlow);
+  
   // State
-  const [flow, setFlow] = useState<ChatbotFlow>(initialFlow);
+  const [flow, setFlow] = useState<ChatbotFlow>(hierarchicalInitialFlow );
   const [currentNodeId, setCurrentNodeId] = useState<number>(1);
   const [isAddNodeOpen, setIsAddNodeOpen] = useState<boolean>(false);
   const [isAddOptionOpen, setIsAddOptionOpen] = useState<boolean>(false);
@@ -65,10 +75,27 @@ const ChatbotEditor: React.FC = () => {
   
   // ノード追加ハンドラ
   const handleAddNode = (title: string) => {
+    const newId = generateNewId(flow);
+    const parentNode = flow.find(node => node.id === currentNodeId);
+    
+    if (!parentNode) return;
+    
+    // 親ノードの階層パスを取得
+    const parentPath = parentNode.hierarchyPath || parentNode.id.toString();
+    
+    // 同じ親を持つノードの数を数える
+    const siblings = flow.filter(node => node.parentId === parentNode.id);
+    const childIndex = siblings.length + 1;
+    
+    // 新しいノードの階層パスを作成
+    const hierarchyPath = `${parentPath}-${childIndex}`;
+    
     const newNode: ChatNode = {
-      id: generateNewId(flow),
+      id: newId,
       title: title,
-      options: []
+      options: [],
+      parentId: parentNode.id,
+      hierarchyPath: hierarchyPath
     };
     
     setFlow([...flow, newNode]);

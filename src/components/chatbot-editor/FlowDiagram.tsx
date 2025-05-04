@@ -45,9 +45,31 @@ const FlowDiagram: React.FC<FlowDiagramProps> = ({
       const node = nodeMap[nodeId];
       if (!node) return null;
       
-      const children = node.options
-        .map((option, idx) => buildNodeTree(option.nextId, depth + 1, idx))
-        .filter((child): child is TreeNode => child !== null);
+      // このノードの直接の子ノードを見つける
+      const childNodes = flow.filter(n => n.parentId === node.id);
+      
+      // 子ノードと選択肢から次のノードを構築
+      const children: TreeNode[] = [];
+      
+      // まず直接の子ノードを追加
+      childNodes.forEach((childNode, idx) => {
+        const childTree = buildNodeTree(childNode.id, depth + 1, idx);
+        if (childTree) {
+          children.push(childTree);
+        }
+      });
+      
+      // 次に選択肢から行き先のノードを追加（まだ子として追加されていない場合のみ）
+      node.options.forEach((option, idx) => {
+        // すでに子として追加されていないか確認
+        if (!childNodes.some(child => child.id === option.nextId) && 
+            !children.some(child => child.node.id === option.nextId)) {
+          const optionTree = buildNodeTree(option.nextId, depth + 1, idx);
+          if (optionTree) {
+            children.push(optionTree);
+          }
+        }
+      });
       
       return {
         node,
@@ -63,6 +85,11 @@ const FlowDiagram: React.FC<FlowDiagramProps> = ({
   // 階層構造からノードを再帰的にレンダリングする関数
   const renderNode = (item: TreeNode): React.ReactElement => {
     const { node, depth, children } = item;
+    
+    // 階層的な名前を表示（hierarchyPathがある場合はそれを使用）
+    const displayName = node.hierarchyPath ? 
+      `ノード ${node.hierarchyPath}` : 
+      `ノード ${node.id}`;
     
     return (
       <div key={node.id} className="flex flex-col mb-6">
@@ -84,13 +111,23 @@ const FlowDiagram: React.FC<FlowDiagramProps> = ({
             style={{ minWidth: '180px' }}
             onClick={() => onNodeSelect(node.id)}
           >
-            <div className="text-sm font-medium">ノード {node.id}</div>
+            <div className="text-sm font-medium">{displayName}</div>
             <div className="text-xs truncate max-w-40">{node.title}</div>
             {node.options.length > 0 && (
               <div className="text-xs text-gray-500 mt-1">
-                {node.options.map((option, optIdx) => (
-                  <div key={optIdx} className="truncate">{option.label} → ノード {option.nextId}</div>
-                ))}
+                {node.options.map((option, optIdx) => {
+                  // 次のノードの階層パスを見つける
+                  const nextNode = flow.find(n => n.id === option.nextId);
+                  const nextNodeName = nextNode?.hierarchyPath ? 
+                    `ノード ${nextNode.hierarchyPath}` : 
+                    `ノード ${option.nextId}`;
+                  
+                  return (
+                    <div key={optIdx} className="truncate">
+                      {option.label} → {nextNodeName}
+                    </div>
+                  );
+                })}
               </div>
             )}
           </div>
