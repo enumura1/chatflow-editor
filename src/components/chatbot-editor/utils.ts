@@ -76,3 +76,47 @@ export const parseImportedJson = (jsonString: string): ChatbotFlow | null => {
     return null;
   }
 };
+
+// 既存のフローに階層パスを追加する関数
+export const updateFlowWithHierarchyPaths = (flow: ChatbotFlow): ChatbotFlow => {
+  // ノードマップの作成（ID → ノード）
+  const nodeMap: Record<number, ChatNode> = {};
+  flow.forEach(node => {
+    nodeMap[node.id] = {...node};
+  });
+  
+  // 親子関係を設定
+  flow.forEach(node => {
+    node.options.forEach(option => {
+      const targetNode = nodeMap[option.nextId];
+      if (targetNode && !targetNode.parentId) {
+        targetNode.parentId = node.id;
+      }
+    });
+  });
+  
+  // ルートノード（ID=1）から始める
+  const rootNode = nodeMap[1];
+  if (rootNode) {
+    rootNode.hierarchyPath = "1";
+    
+    // 階層パスを再帰的に設定
+    const setHierarchyPaths = (nodeId: number, parentPath: string) => {
+      // このノードを親とする子ノードを見つける
+      const childNodes = Object.values(nodeMap).filter(n => n.parentId === nodeId);
+      
+      // 各子ノードに階層パスを設定
+      childNodes.forEach((childNode, index) => {
+        childNode.hierarchyPath = `${parentPath}-${index + 1}`;
+        
+        // 再帰的に子ノードの子も処理
+        setHierarchyPaths(childNode.id, childNode.hierarchyPath);
+      });
+    };
+    
+    setHierarchyPaths(rootNode.id, rootNode.hierarchyPath);
+  }
+  
+  // 更新されたノードのリストを返す
+  return Object.values(nodeMap);
+};

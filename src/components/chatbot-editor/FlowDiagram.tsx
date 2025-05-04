@@ -45,9 +45,31 @@ const FlowDiagram: React.FC<FlowDiagramProps> = ({
       const node = nodeMap[nodeId];
       if (!node) return null;
       
-      const children = node.options
-        .map((option, idx) => buildNodeTree(option.nextId, depth + 1, idx))
-        .filter((child): child is TreeNode => child !== null);
+      // このノードの直接の子ノードを見つける
+      const childNodes = flow.filter(n => n.parentId === node.id);
+      
+      // 子ノードと選択肢から次のノードを構築
+      const children: TreeNode[] = [];
+      
+      // まず直接の子ノードを追加
+      childNodes.forEach((childNode, idx) => {
+        const childTree = buildNodeTree(childNode.id, depth + 1, idx);
+        if (childTree) {
+          children.push(childTree);
+        }
+      });
+      
+      // 次に選択肢から行き先のノードを追加（まだ子として追加されていない場合のみ）
+      node.options.forEach((option, idx) => {
+        // すでに子として追加されていないか確認
+        if (!childNodes.some(child => child.id === option.nextId) && 
+            !children.some(child => child.node.id === option.nextId)) {
+          const optionTree = buildNodeTree(option.nextId, depth + 1, idx);
+          if (optionTree) {
+            children.push(optionTree);
+          }
+        }
+      });
       
       return {
         node,
@@ -64,40 +86,58 @@ const FlowDiagram: React.FC<FlowDiagramProps> = ({
   const renderNode = (item: TreeNode): React.ReactElement => {
     const { node, depth, children } = item;
     
+    // 階層的な名前を表示
+    const displayName = node.hierarchyPath ? 
+      `ノード ${node.hierarchyPath}` : 
+      `ノード ${node.id}`;
+    
     return (
-      <div key={node.id} className="flex flex-col mb-6">
+      // mb-6をmb-10に変更して縦の余白を増やす
+      <div key={node.id} className="flex flex-col mb-10"> 
         <div className="flex items-start">
-          {/* インデントと接続線 */}
+          {/* インデントと接続線 - 高さも調整 */}
           {depth > 0 && (
             <>
               {Array(depth).fill(0).map((_, i) => (
+                // h-8をh-12に変更して線の長さを伸ばす
                 <div key={i} className={`w-8 ${i < depth - 1 ? 'border-l-2 border-gray-400' : ''}`}></div>
               ))}
-              <div className="w-8 h-8 border-b-4 border-l-4 border-gray-400 mr-2"></div>
+              {/* h-8をh-12に変更し、位置も調整 */}
+              <div className="w-8 h-12 border-b-4 border-l-4 border-gray-400 mr-2"></div>
             </>
           )}
           
-          {/* ノード */}
+          {/* ノード - パディングも少し増やす */}
           <div 
-            className={`px-4 py-2 rounded-lg shadow cursor-pointer
+            className={`px-5 py-3 rounded-lg shadow cursor-pointer
               ${currentNodeId === node.id ? 'bg-blue-100 border-2 border-blue-500' : 'bg-white border border-gray-200'}`}
             style={{ minWidth: '180px' }}
             onClick={() => onNodeSelect(node.id)}
           >
-            <div className="text-sm font-medium">ノード {node.id}</div>
+            <div className="text-sm font-medium">{displayName}</div>
             <div className="text-xs truncate max-w-40">{node.title}</div>
             {node.options.length > 0 && (
               <div className="text-xs text-gray-500 mt-1">
-                {node.options.map((option, optIdx) => (
-                  <div key={optIdx} className="truncate">{option.label} → ノード {option.nextId}</div>
-                ))}
+                {node.options.map((option, optIdx) => {
+                  const nextNode = flow.find(n => n.id === option.nextId);
+                  const nextNodeName = nextNode?.hierarchyPath ? 
+                    `ノード ${nextNode.hierarchyPath}` : 
+                    `ノード ${option.nextId}`;
+                  
+                  return (
+                    <div key={optIdx} className="truncate">
+                      {option.label} → {nextNodeName}
+                    </div>
+                  );
+                })}
               </div>
             )}
           </div>
         </div>
         
         {children.length > 0 && (
-          <div className="flex flex-col ml-8 mt-2">
+          // mt-2をmt-4に変更して子ノードとの間隔も広げる
+          <div className="flex flex-col ml-8 mt-4"> 
             {children.map(child => renderNode(child))}
           </div>
         )}

@@ -39,7 +39,9 @@ const NodeEditor: React.FC<NodeEditorProps> = ({
   return (
     <Card className="h-full flex flex-col overflow-hidden">
       <CardHeader className="py-3 px-4 border-b flex-row justify-between items-center shrink-0">
-        <CardTitle className="text-base">ノード {node.id} 編集</CardTitle>
+        <CardTitle className="text-base">
+          {node.hierarchyPath ? `ノード ${node.hierarchyPath} 編集` : `ノード ${node.id} 編集`}
+        </CardTitle>
         <Button 
           onClick={handleSave}
           size="sm"

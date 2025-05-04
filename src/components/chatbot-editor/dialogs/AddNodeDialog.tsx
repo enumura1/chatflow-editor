@@ -60,13 +60,13 @@ const AddNodeDialog: React.FC<AddNodeDialogProps> = ({
     >
       <div className="space-y-4">
         <div className="space-y-2">
-          <label className="text-sm font-medium">ノードタイトル</label>
+          <label className="text-sm font-medium">表示する文言</label>
           <input
             className="w-full px-3 py-2 border rounded-md"
             value={nodeTitle}
             onChange={(e) => setNodeTitle(e.target.value)}
             onKeyDown={handleKeyDown}
-            placeholder="ノードのタイトルを入力"
+            placeholder="チャットに表示する文言を入力"
             autoFocus
           />
         </div>
