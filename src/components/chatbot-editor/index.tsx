@@ -7,6 +7,8 @@ import EditOptionDialog from './dialogs/EditOptionDialog';
 import ImportDialog from './dialogs/ImportDialog';
 import { generateNodePositions, generateNewId, exportFlowToFile } from './utils';
 import { ChatbotFlow, ChatNode } from '../../types/chatbot';
+import { Button } from '@/components/ui/button';
+import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 
 // 初期フローデータ
 const initialFlow: ChatbotFlow = [
@@ -164,56 +166,73 @@ const ChatbotEditor: React.FC = () => {
   const editingOption = getEditingOption();
   
   return (
-    <div className="flex h-screen w-full">
-      {/* 左側: ワークフロー図 (70%) */}
-      <div className="w-7/10 border-r p-4">
-        <div className="flex justify-between items-center mb-4">
-          <h2 className="text-lg font-bold">ワークフロー構成</h2>
-          <div className="flex space-x-2">
-            <button 
-              className="px-3 py-1 bg-blue-50 hover:bg-blue-100 border border-blue-200 rounded-md text-sm" 
-              onClick={() => setIsAddNodeOpen(true)}
-            >
-              ノード追加
-            </button>
-            <button 
-              className="px-3 py-1 bg-blue-50 hover:bg-blue-100 border border-blue-200 rounded-md text-sm" 
-              onClick={handleExport}
-            >
-              エクスポート
-            </button>
-            <button 
-              className="px-3 py-1 bg-blue-50 hover:bg-blue-100 border border-blue-200 rounded-md text-sm" 
-              onClick={() => setIsImportOpen(true)}
-            >
-              インポート
-            </button>
-          </div>
-        </div>
-        
-        <FlowDiagram 
-          flow={flow}
-          nodePositions={nodePositions}
-          currentNodeId={currentNodeId}
-          onNodeSelect={handleNodeSelect}
-        />
-        
-        <NodeEditor 
-          node={currentNode}
-          onUpdateNode={handleUpdateNode}
-          onAddOption={handleOpenAddOption}
-          onEditOption={handleEditOption}
-          onRemoveOption={handleRemoveOption}
-        />
+    <div className="flex h-screen w-full bg-background text-foreground p-4 gap-4">
+      {/* 左側: ワークフロー図 (60%) */}
+      <div className="w-3/5 h-full flex flex-col">
+        <Card className="h-full flex flex-col overflow-hidden">
+          <CardHeader className="py-3 px-4 border-b shrink-0">
+            <div className="flex justify-between items-center">
+              <CardTitle className="text-base">ワークフロー構成</CardTitle>
+              <div className="flex space-x-2">
+                <Button 
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setIsAddNodeOpen(true)}
+                  className="bg-blue-50 hover:bg-blue-100 border-blue-200 text-blue-800"
+                >
+                  ノード追加
+                </Button>
+                <Button 
+                  variant="outline"
+                  size="sm"
+                  onClick={handleExport}
+                  className="bg-blue-50 hover:bg-blue-100 border-blue-200 text-blue-800"
+                >
+                  エクスポート
+                </Button>
+                <Button 
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setIsImportOpen(true)}
+                  className="bg-blue-50 hover:bg-blue-100 border-blue-200 text-blue-800"
+                >
+                  インポート
+                </Button>
+              </div>
+            </div>
+          </CardHeader>
+          
+          <CardContent className="p-0 flex-1 overflow-hidden">
+            <FlowDiagram 
+              flow={flow}
+              nodePositions={nodePositions}
+              currentNodeId={currentNodeId}
+              onNodeSelect={handleNodeSelect}
+            />
+          </CardContent>
+        </Card>
       </div>
       
-      {/* 右側: チャットプレビュー (30%) */}
-      <div className="w-3/10 p-4">
-        <h2 className="text-lg font-bold mb-4">チャットプレビュー</h2>
-        <ChatPreview 
-          currentNode={currentNode}
-          onOptionClick={handleOptionClick}
-        />
+      {/* 右側: チャットプレビューとノード編集 (40%) */}
+      <div className="w-2/5 h-full flex flex-col gap-4">
+        {/* チャットプレビュー (上半分) */}
+        <div className="h-[calc(50%-8px)]">
+          <ChatPreview 
+            currentNode={currentNode}
+            onOptionClick={handleOptionClick}
+          />
+        </div>
+        
+        {/* ノード編集 (下半分) */}
+        <div className="h-[calc(50%-8px)]">
+          <NodeEditor 
+            node={currentNode}
+            onUpdateNode={handleUpdateNode}
+            onAddOption={handleOpenAddOption}
+            onEditOption={handleEditOption}
+            onRemoveOption={handleRemoveOption}
+          />
+        </div>
       </div>
       
       {/* ダイアログコンポーネント */}

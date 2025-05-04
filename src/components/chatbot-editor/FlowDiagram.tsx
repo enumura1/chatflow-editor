@@ -1,4 +1,6 @@
+import React from 'react';
 import { ChatbotFlow, ChatNode, NodePositions } from '../../types/chatbot';
+import { ScrollArea } from '@/components/ui/scroll-area';
 
 interface FlowDiagramProps {
   flow: ChatbotFlow;
@@ -106,9 +108,11 @@ const FlowDiagram: React.FC<FlowDiagramProps> = ({
   const hierarchy = buildHierarchy();
   
   return (
-    <div className="bg-gray-50 rounded-lg p-4 overflow-auto h-96">
-      {hierarchy && renderNode(hierarchy)}
-    </div>
+    <ScrollArea className="h-full w-full">
+      <div className="p-4">
+        {hierarchy && renderNode(hierarchy)}
+      </div>
+    </ScrollArea>
   );
 };
 
