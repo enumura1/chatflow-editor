@@ -86,27 +86,30 @@ const FlowDiagram: React.FC<FlowDiagramProps> = ({
   const renderNode = (item: TreeNode): React.ReactElement => {
     const { node, depth, children } = item;
     
-    // 階層的な名前を表示（hierarchyPathがある場合はそれを使用）
+    // 階層的な名前を表示
     const displayName = node.hierarchyPath ? 
       `ノード ${node.hierarchyPath}` : 
       `ノード ${node.id}`;
     
     return (
-      <div key={node.id} className="flex flex-col mb-6">
+      // mb-6をmb-10に変更して縦の余白を増やす
+      <div key={node.id} className="flex flex-col mb-10"> 
         <div className="flex items-start">
-          {/* インデントと接続線 */}
+          {/* インデントと接続線 - 高さも調整 */}
           {depth > 0 && (
             <>
               {Array(depth).fill(0).map((_, i) => (
+                // h-8をh-12に変更して線の長さを伸ばす
                 <div key={i} className={`w-8 ${i < depth - 1 ? 'border-l-2 border-gray-400' : ''}`}></div>
               ))}
-              <div className="w-8 h-8 border-b-4 border-l-4 border-gray-400 mr-2"></div>
+              {/* h-8をh-12に変更し、位置も調整 */}
+              <div className="w-8 h-12 border-b-4 border-l-4 border-gray-400 mr-2"></div>
             </>
           )}
           
-          {/* ノード */}
+          {/* ノード - パディングも少し増やす */}
           <div 
-            className={`px-4 py-2 rounded-lg shadow cursor-pointer
+            className={`px-5 py-3 rounded-lg shadow cursor-pointer
               ${currentNodeId === node.id ? 'bg-blue-100 border-2 border-blue-500' : 'bg-white border border-gray-200'}`}
             style={{ minWidth: '180px' }}
             onClick={() => onNodeSelect(node.id)}
@@ -116,7 +119,6 @@ const FlowDiagram: React.FC<FlowDiagramProps> = ({
             {node.options.length > 0 && (
               <div className="text-xs text-gray-500 mt-1">
                 {node.options.map((option, optIdx) => {
-                  // 次のノードの階層パスを見つける
                   const nextNode = flow.find(n => n.id === option.nextId);
                   const nextNodeName = nextNode?.hierarchyPath ? 
                     `ノード ${nextNode.hierarchyPath}` : 
@@ -134,7 +136,8 @@ const FlowDiagram: React.FC<FlowDiagramProps> = ({
         </div>
         
         {children.length > 0 && (
-          <div className="flex flex-col ml-8 mt-2">
+          // mt-2をmt-4に変更して子ノードとの間隔も広げる
+          <div className="flex flex-col ml-8 mt-4"> 
             {children.map(child => renderNode(child))}
           </div>
         )}
