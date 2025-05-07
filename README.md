@@ -1,36 +1,86 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Chatbot Flow Editor
+
+A web application for visually creating and editing conversation flows for chatbots. Use an intuitive node-based editor to easily design complex conversation scenarios.
+
+## Features
+
+- **Hierarchical Node Structure**: Visualize conversation flows in a tree structure
+- **Intuitive UI**: Easy operation without drag and drop
+- **Real-time Preview**: Instantly check your chatbot as you build it
+- **Import/Export Functionality**: Save and load in JSON format
+- **Hierarchical Naming Convention**: Clear identifiers like Node 1, Node 1-1, Node 1-1-1, etc.
+
+## Tech Stack
+
+- [Next.js 15](https://nextjs.org/) - Frontend framework
+- [React](https://react.dev/) - version 19
+- [TypeScript](https://www.typescriptlang.org/) - Type-safe development
+- [Tailwind CSS](https://tailwindcss.com/) - Styling
+- [Radix UI](https://www.radix-ui.com/) - Accessible UI components
+- [shadcn/ui](https://ui.shadcn.com/) - Reusable UI component collection
+- [Lucide React](https://lucide.dev/) - Icon library
+- [class-variance-authority](https://cva.style/docs) - Component variant management
 
 ## Getting Started
 
-First, run the development server:
+### Prerequisites
+
+- Node.js 18.18.0 or later
+- npm, yarn, or bun
+
+### Installation
+
+```bash
+# Clone the repository
+git clone https://github.com/enumura1/chatflow-editor.git
+cd chatflow-editor
+
+# Install dependencies
+npm install
+# or
+yarn install
+# or 
+pnpm install
+# or
+bun install
+```
+
+### Starting the Development Server
 
 ```bash
 npm run dev
 # or
 yarn dev
-# or
-pnpm dev
+# or 
+pnpm install
 # or
 bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open [http://localhost:3000](http://localhost:3000) in your browser to view the application.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Usage
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+1. **Adding Nodes**: Click the "Add Node" button to create a new node
+2. **Editing Nodes**: Click on a node to select it, then edit its title or options
+3. **Adding Options**: Click the "Add Option" button to add choices to the current node
+4. **Preview**: See your chatbot in action in real-time in the upper right panel
+5. **Export/Import**: Save or load your flow as a JSON file
 
-## Learn More
+## Project Structure
 
-To learn more about Next.js, take a look at the following resources:
+```
+src/
+├── app/                # Next.js application root
+├── components/         # React components
+│   ├── chatbot-editor/ # Editor-related components
+│   └── ui/             # Reusable UI components
+├── lib/                # Utility functions
+└── types/              # TypeScript type definitions
+```
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## Customization
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+- `src/types/chatbot.ts` - Modify the chatbot data structure
+- `src/components/chatbot-editor/index.tsx` - Customize initial flow data
+- `src/app/globals.css` - Adjust global styles
