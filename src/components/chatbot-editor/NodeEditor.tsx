@@ -37,18 +37,19 @@ const NodeEditor: React.FC<NodeEditorProps> = ({
   
   return (
     <Card className="h-full flex flex-col overflow-hidden">
-      <CardHeader className="py-3 px-4 border-b flex-row justify-between items-center shrink-0">
-        <CardTitle className="text-base">
-          {node.hierarchyPath ? `ノード ${node.hierarchyPath} Edit` : `Node ${node.id} Edit`}
-        </CardTitle>
-        <Button 
-          onClick={handleSave}
-          size="sm"
-          variant="outline"
-          className="bg-green-100 text-green-800 hover:bg-green-200 border-green-300"
-        >
-          Save
-        </Button>
+      <CardHeader className="py-2 px-4 border-b shrink-0">
+        <div className="flex justify-between items-center w-full">
+          <CardTitle className="text-base">
+            {node.hierarchyPath ? `Node ${node.hierarchyPath} Edit` : `Node ${node.id} Edit`}
+          </CardTitle>
+          <Button 
+            onClick={handleSave}
+            variant="outline"
+            className="bg-green-100 text-green-800 hover:bg-green-200 border-green-300 px-4 py-1 h-auto text-sm font-medium"
+          >
+            Save
+          </Button>
+        </div>
       </CardHeader>
       
       <CardContent className="p-4 flex-1 flex flex-col gap-4 overflow-hidden">
