@@ -18,7 +18,7 @@ const ChatPreview: React.FC<ChatPreviewProps> = ({
     <div className="flex flex-col h-full">
       <Card className="h-full flex flex-col overflow-hidden">
         <CardHeader className="py-3 px-4 border-b shrink-0">
-          <CardTitle className="text-base">チャットプレビュー</CardTitle>
+          <CardTitle className="text-base">Chat Preview</CardTitle>
         </CardHeader>
         <CardContent className="flex-1 flex flex-col p-0 overflow-hidden">
           {/* メッセージ部分 */}

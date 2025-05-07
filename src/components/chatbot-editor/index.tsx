@@ -197,38 +197,35 @@ const ChatbotEditor: React.FC = () => {
       {/* 左側: ワークフロー図 (60%) */}
       <div className="w-3/5 h-full flex flex-col">
         <Card className="h-full flex flex-col overflow-hidden">
-          <CardHeader className="py-3 px-4 border-b shrink-0">
+          <CardHeader className="py-2 px-4 border-b shrink-0">
             <div className="flex justify-between items-center">
-              <CardTitle className="text-base">ワークフロー構成</CardTitle>
+              <CardTitle className="text-xl">WorkFlow Editor</CardTitle>
               <div className="flex space-x-2">
                 <Button 
                   variant="outline"
-                  size="sm"
+                  className="bg-blue-50 hover:bg-blue-100 border-blue-200 text-blue-800 px-4 py-2 h-auto text-sm font-medium"
                   onClick={() => setIsAddNodeOpen(true)}
-                  className="bg-blue-50 hover:bg-blue-100 border-blue-200 text-blue-800"
                 >
-                  ノード追加
+                  Add Node
                 </Button>
                 <Button 
                   variant="outline"
-                  size="sm"
+                  className="bg-blue-50 hover:bg-blue-100 border-blue-200 text-blue-800 px-4 py-1 h-auto text-sm font-medium"
                   onClick={handleExport}
-                  className="bg-blue-50 hover:bg-blue-100 border-blue-200 text-blue-800"
                 >
-                  エクスポート
+                  Export
                 </Button>
                 <Button 
                   variant="outline"
-                  size="sm"
+                  className="bg-blue-50 hover:bg-blue-100 border-blue-200 text-blue-800 px-4 py-1 h-auto text-sm font-medium"
                   onClick={() => setIsImportOpen(true)}
-                  className="bg-blue-50 hover:bg-blue-100 border-blue-200 text-blue-800"
                 >
-                  インポート
+                  Import
                 </Button>
               </div>
             </div>
           </CardHeader>
-          
+                  
           <CardContent className="p-0 flex-1 overflow-hidden">
             <FlowDiagram 
               flow={flow}

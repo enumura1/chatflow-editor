@@ -47,21 +47,21 @@ const ImportDialog: React.FC<ImportDialogProps> = ({ open, onClose, onImport }) 
     <Dialog 
       open={open} 
       onClose={onClose}
-      title="JSONをインポート"
+      title="Import JSON"
       footer={
         <>
           <button 
             className="px-3 py-1 border rounded-md"
             onClick={onClose}
           >
-            キャンセル
+            Cancel
           </button>
           <button 
             className="px-3 py-1 bg-blue-600 text-white rounded-md"
             onClick={handleImport}
             disabled={!importJson.trim()}
           >
-            インポート
+            Import
           </button>
         </>
       }
@@ -77,7 +77,7 @@ const ImportDialog: React.FC<ImportDialogProps> = ({ open, onClose, onImport }) 
           className="px-3 py-2 border rounded-md w-full text-center"
           onClick={() => fileInputRef.current?.click()}
         >
-          JSONファイルを選択
+          Select a JSON file
         </button>
         
         <input
