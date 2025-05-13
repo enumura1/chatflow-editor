@@ -1,5 +1,3 @@
-// src/components/chatbot-editor/ChatPreview.tsx
-import React from 'react';
 import { ChatNode } from '../../types/chatbot';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -16,13 +14,12 @@ const ChatPreview: React.FC<ChatPreviewProps> = ({
   return (
     <div className="flex flex-col h-full">
       <Card className="h-full flex flex-col overflow-hidden">
-        <CardHeader className="py-3 px-4 border-b shrink-0 bg-gray-50">
-          <CardTitle className="text-base flex items-center">
-            <div className="w-2 h-2 bg-green-500 rounded-full mr-2"></div>
+        <CardHeader className="py-3 px-4 border-b shrink-0">
+          <CardTitle className="text-base">
             Chat Preview
           </CardTitle>
         </CardHeader>
-        <CardContent className="flex-1 flex flex-col p-0 overflow-hidden bg-gray-100">
+        <CardContent className="flex-1 flex flex-col p-0 overflow-hidden bg-white">
           {/* スクロール可能なチャット領域 */}
           <ScrollArea className="h-full w-full">
             <div className="p-4 flex flex-col space-y-4">
