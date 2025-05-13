@@ -24,8 +24,16 @@ const ChatPreview: React.FC<ChatPreviewProps> = ({
           {/* メッセージ部分 */}
           <div className="flex-none p-4">
             <div className="flex flex-col gap-4">
-              <div className="bg-primary/10 p-4 rounded-lg max-w-[80%] self-start">
-                {currentNode.title}
+              <div className="flex items-start">
+                {/* アバター */}
+                <div className="flex-shrink-0 w-8 h-8 rounded-full bg-blue-500 text-white flex items-center justify-center mr-2">
+                  B
+                </div>
+                
+                {/* メッセージバブル */}
+                <div className="bg-primary/10 p-4 rounded-lg max-w-[80%]">
+                  {currentNode.title}
+                </div>
               </div>
             </div>
           </div>
