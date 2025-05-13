@@ -50,7 +50,7 @@ const ChatbotEditor: React.FC = () => {
   const hierarchicalInitialFlow = updateFlowWithHierarchyPaths(initialFlow);
   
   // State
-  const [flow, setFlow] = useState<ChatbotFlow>(hierarchicalInitialFlow );
+  const [flow, setFlow] = useState<ChatbotFlow>(hierarchicalInitialFlow);
   const [currentNodeId, setCurrentNodeId] = useState<number>(1);
   const [isAddNodeOpen, setIsAddNodeOpen] = useState<boolean>(false);
   const [isAddOptionOpen, setIsAddOptionOpen] = useState<boolean>(false);
