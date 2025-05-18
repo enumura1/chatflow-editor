@@ -116,13 +116,8 @@ const ChatPreview: React.FC<ChatPreviewProps> = ({
                       <div className="flex-shrink-0 w-8 h-8 rounded-full bg-blue-600 text-white flex items-center justify-center mr-2 text-xs">
                         Bot
                       </div>
-                      <div className="bg-blue-100 dark:bg-blue-900/30 p-3 rounded-lg text-gray-800 dark:text-gray-100">
+                      <div className={`bg-blue-100 dark:bg-blue-900/30 p-3 rounded-lg text-gray-800 dark:text-gray-100 ${message.nodeId === currentNode.id ? 'ring-2 ring-blue-300 dark:ring-blue-700' : ''}`}>
                         <div>{message.content}</div>
-                        {message.nodeId === currentNode.id && (
-                          <div className="text-xs text-gray-500 dark:text-gray-400 mt-1">
-                            (現在のノード)
-                          </div>
-                        )}
                         
                         {/* 選択肢がある場合に表示 */}
                         {message.showOptions && currentNode.options.length > 0 && (
@@ -142,7 +137,6 @@ const ChatPreview: React.FC<ChatPreviewProps> = ({
                       </div>
                     </div>
                   )}
-                  
                   {message.type === 'user' && (
                     <div className="flex items-start max-w-[80%] flex-row-reverse">
                       <div className="flex-shrink-0 w-8 h-8 rounded-full bg-gray-600 text-white flex items-center justify-center ml-2 text-xs">
