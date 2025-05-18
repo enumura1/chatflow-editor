@@ -18,7 +18,7 @@ interface DialogProps {
 const Dialog: React.FC<DialogProps> = ({ open, onClose, title, children, footer }) => {
   return (
     <UIDialog open={open} onOpenChange={(open) => !open && onClose()}>
-      <DialogContent className="sm:max-w-md">
+      <DialogContent className="sm:max-w-3xl">
         <DialogHeader>
           <DialogTitle>{title}</DialogTitle>
         </DialogHeader>
