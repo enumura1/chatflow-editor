@@ -5,6 +5,7 @@ import ChatPreview from './ChatPreview';
 import AddNodeDialog from './dialogs/AddNodeDialog';
 import EditOptionDialog from './dialogs/EditOptionDialog';
 import ImportDialog from './dialogs/ImportDialog';
+import ExportDialog from './dialogs/ExportDialog';
 import { generateNodePositions, generateNewId, exportFlowToFile, updateFlowWithHierarchyPaths } from './utils';
 import { ChatbotFlow, ChatNode } from '../../types/chatbot';
 import { Button } from '@/components/ui/button';
@@ -55,6 +56,7 @@ const ChatbotEditor: React.FC = () => {
   const [isAddNodeOpen, setIsAddNodeOpen] = useState<boolean>(false);
   const [isAddOptionOpen, setIsAddOptionOpen] = useState<boolean>(false);
   const [isImportOpen, setIsImportOpen] = useState<boolean>(false);
+  const [isExportOpen, setIsExportOpen] = useState<boolean>(false);
   const [editingOptionIndex, setEditingOptionIndex] = useState<number | null>(null);
   
   // 現在のノードを取得
@@ -153,7 +155,6 @@ const ChatbotEditor: React.FC = () => {
               : opt
           );
         } else {
-          // 新しいオプションを追加
           updatedOptions = [
             ...node.options, 
             { label, nextId }
@@ -191,7 +192,12 @@ const ChatbotEditor: React.FC = () => {
     setIsImportOpen(false);
   };
   
-  // エクスポートハンドラ
+  // エクスポートボタンクリックハンドラ
+  const handleExportClick = () => {
+    setIsExportOpen(true);
+  };
+  
+  // 実際のエクスポート処理
   const handleExport = () => {
     exportFlowToFile(flow);
   };
@@ -225,7 +231,7 @@ const ChatbotEditor: React.FC = () => {
                 <Button 
                   variant="outline"
                   className="bg-blue-50 hover:bg-blue-100 border-blue-200 text-blue-800 px-4 py-1 h-auto text-sm font-medium"
-                  onClick={handleExport}
+                  onClick={handleExportClick}
                 >
                   Export
                 </Button>
@@ -298,6 +304,13 @@ const ChatbotEditor: React.FC = () => {
         open={isImportOpen}
         onClose={() => setIsImportOpen(false)}
         onImport={handleImport}
+      />
+      
+      <ExportDialog 
+        open={isExportOpen}
+        onClose={() => setIsExportOpen(false)}
+        flow={flow}
+        onExport={handleExport}
       />
     </div>
   );
