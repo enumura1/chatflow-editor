@@ -154,10 +154,8 @@ const ChatPreview: React.FC<ChatPreviewProps> = ({
           
           {/* 選択肢がない場合の表示 - フッター部分 */}
           {currentNode.options.length === 0 && (
-            <div className="border-t bg-muted/20 p-1 shrink-0">
-              <div className="text-muted-foreground text-xs py-1 text-center">
-                このノードには選択肢がありません
-              </div>
+            <div className="border-t bg-muted/20 shrink-0 text-base text-muted-foreground text-center py-1">
+              No options available for this node
             </div>
           )}
         </CardContent>
