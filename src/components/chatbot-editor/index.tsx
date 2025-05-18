@@ -257,6 +257,7 @@ const ChatbotEditor: React.FC = () => {
         <div className="h-[calc(50%-8px)]">
           <ChatPreview 
             currentNode={currentNode}
+            flow={flow}
             onOptionClick={handleOptionClick}
           />
         </div>
