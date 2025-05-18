@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import FlowDiagram from './FlowDiagram';
 import NodeEditor from './NodeEditor';
 import ChatPreview from './ChatPreview';
@@ -97,9 +97,23 @@ const ChatbotEditor: React.FC = () => {
       parentId: parentNode.id,
       hierarchyPath: hierarchyPath
     };
+  
+    // 親ノードに新しいオプションを追加する
+    const updatedParentNode = {
+      ...parentNode,
+      options: [
+        ...parentNode.options,
+        { label: `Option to ${title}`, nextId: newId }
+      ]
+    };
     
-    setFlow([...flow, newNode]);
-    setCurrentNodeId(newNode.id);
+    // 更新されたフローを設定
+    const updatedFlow = flow.map(node => 
+      node.id === parentNode.id ? updatedParentNode : node
+    );
+    
+    setFlow([...updatedFlow, newNode]);
+    setCurrentNodeId(newId);
     setIsAddNodeOpen(false);
   };
   
@@ -243,6 +257,7 @@ const ChatbotEditor: React.FC = () => {
         <div className="h-[calc(50%-8px)]">
           <ChatPreview 
             currentNode={currentNode}
+            flow={flow}
             onOptionClick={handleOptionClick}
           />
         </div>

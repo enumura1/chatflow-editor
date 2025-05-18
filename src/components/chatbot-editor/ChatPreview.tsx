@@ -1,19 +1,104 @@
 // src/components/chatbot-editor/ChatPreview.tsx
-import React from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { ChatNode } from '../../types/chatbot';
-import { ScrollArea } from '@/components/ui/scroll-area';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 
+interface Message {
+  type: 'bot' | 'user';
+  content: string;
+  nodeId?: number;
+  showOptions?: boolean; // 選択肢を表示するかのフラグを追加
+}
+
 interface ChatPreviewProps {
   currentNode: ChatNode;
+  flow: ChatNode[];
   onOptionClick: (nextId: number) => void;
 }
 
 const ChatPreview: React.FC<ChatPreviewProps> = ({ 
   currentNode, 
+  flow,
   onOptionClick 
 }) => {
+  const [chatHistory, setChatHistory] = useState<Message[]>([]);
+  const scrollAreaRef = useRef<HTMLDivElement>(null);
+  
+  // チャット履歴の構築
+  useEffect(() => {
+    const buildChatPath = (nodeId: number, path: number[] = []): number[] => {
+      if (nodeId === 1) {
+        return [1, ...path];
+      }
+      
+      const node = flow.find(n => n.id === nodeId);
+      if (!node || !node.parentId) {
+        return [nodeId, ...path];
+      }
+      
+      const parentNode = flow.find(n => n.id === node.parentId);
+      if (!parentNode) {
+        return [nodeId, ...path];
+      }
+      
+      return buildChatPath(parentNode.id, [nodeId, ...path]);
+    };
+    
+    const path = buildChatPath(currentNode.id);
+    const history: Message[] = [];
+    
+    for (let i = 0; i < path.length; i++) {
+      const nodeId = path[i];
+      const node = flow.find(n => n.id === nodeId);
+      
+      if (node) {
+        // ボットのメッセージを追加
+        // 現在のノードの場合のみ、選択肢を表示するフラグをtrueに設定
+        history.push({
+          type: 'bot',
+          content: node.title,
+          nodeId: node.id,
+          showOptions: node.id === currentNode.id
+        });
+        
+        // 次のノードがある場合、ユーザーの選択肢を追加
+        if (i < path.length - 1) {
+          const nextNodeId = path[i + 1];
+          const selectedOption = node.options.find(opt => opt.nextId === nextNodeId);
+          
+          if (selectedOption) {
+            history.push({
+              type: 'user',
+              content: selectedOption.label
+            });
+          }
+        }
+      }
+    }
+    
+    setChatHistory(history);
+    
+    // 自動スクロール
+    setTimeout(() => {
+      if (scrollAreaRef.current) {
+        scrollAreaRef.current.scrollTop = scrollAreaRef.current.scrollHeight;
+      }
+    }, 100);
+  }, [currentNode.id, flow]);
+  
+  // 選択肢をクリックしたときのハンドラ - チャット履歴も更新する
+  const handleOptionClick = (nextId: number) => {
+    onOptionClick(nextId);
+    
+    // 選択肢が選ばれたら、現在のノードの選択肢表示フラグをfalseに設定
+    setChatHistory(prev => 
+      prev.map(msg => 
+        msg.nodeId === currentNode.id ? { ...msg, showOptions: false } : msg
+      )
+    );
+  };
+  
   return (
     <div className="flex flex-col h-full">
       <Card className="h-full flex flex-col overflow-hidden">
@@ -21,46 +106,58 @@ const ChatPreview: React.FC<ChatPreviewProps> = ({
           <CardTitle className="text-base">Chat Preview</CardTitle>
         </CardHeader>
         <CardContent className="flex-1 flex flex-col p-0 overflow-hidden">
-          {/* メッセージ部分 */}
-          <div className="flex-none p-4">
-            <div className="flex flex-col gap-4">
-              <div className="flex items-start">
-                {/* アバター */}
-                <div className="flex-shrink-0 w-8 h-8 rounded-full bg-blue-500 text-white flex items-center justify-center mr-2">
-                  B
+          {/* メッセージ部分 - スクロール可能 */}
+          <div className="flex-1 overflow-auto" ref={scrollAreaRef}>
+            <div className="p-4 space-y-4">
+              {chatHistory.map((message, index) => (
+                <div key={index} className={`flex ${message.type === 'user' ? 'justify-end' : 'justify-start'}`}>
+                  {message.type === 'bot' && (
+                    <div className="flex items-start max-w-[80%]">
+                      <div className="flex-shrink-0 w-8 h-8 rounded-full bg-blue-600 text-white flex items-center justify-center mr-2 text-xs">
+                        Bot
+                      </div>
+                      <div className={`bg-blue-100 dark:bg-blue-900/30 p-3 rounded-lg text-gray-800 dark:text-gray-100 ${message.nodeId === currentNode.id ? 'ring-2 ring-blue-300 dark:ring-blue-700' : ''}`}>
+                        <div>{message.content}</div>
+                        
+                        {/* 選択肢がある場合に表示 */}
+                        {message.showOptions && currentNode.options.length > 0 && (
+                          <div className="mt-3 pt-2 border-t border-blue-200 dark:border-blue-800">
+                            {currentNode.options.map((opt, idx) => (
+                              <Button
+                                key={idx}
+                                variant="outline"
+                                className="w-full justify-start font-normal text-left h-auto py-2 mb-2 bg-white hover:bg-gray-100 text-gray-800 border-gray-200"
+                                onClick={() => handleOptionClick(opt.nextId)}
+                              >
+                                {opt.label}
+                              </Button>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  )}
+                  {message.type === 'user' && (
+                    <div className="flex items-start max-w-[80%] flex-row-reverse">
+                      <div className="flex-shrink-0 w-8 h-8 rounded-full bg-gray-600 text-white flex items-center justify-center ml-2 text-xs">
+                        User
+                      </div>
+                      <div className="bg-gray-200 dark:bg-gray-700 text-gray-900 dark:text-white p-3 rounded-lg">
+                        {message.content}
+                      </div>
+                    </div>
+                  )}
                 </div>
-                
-                {/* メッセージバブル */}
-                <div className="bg-primary/10 p-4 rounded-lg max-w-[80%]">
-                  {currentNode.title}
-                </div>
-              </div>
+              ))}
             </div>
           </div>
           
-          {/* 選択肢部分 - スクロール可能 */}
-          <div className="border-t bg-muted/20 flex-1 overflow-hidden">
-            <ScrollArea className="h-full">
-              <div className="p-4 space-y-2">
-                {currentNode.options.map((opt, idx) => (
-                  <Button
-                    key={idx}
-                    variant="outline"
-                    className="w-full justify-start font-normal text-left h-auto py-3"
-                    onClick={() => onOptionClick(opt.nextId)}
-                  >
-                    {opt.label}
-                  </Button>
-                ))}
-                
-                {currentNode.options.length === 0 && (
-                  <div className="text-muted-foreground text-sm p-2 text-center">
-                    このノードには選択肢がありません
-                  </div>
-                )}
-              </div>
-            </ScrollArea>
-          </div>
+          {/* 選択肢がない場合の表示 - フッター部分 */}
+          {currentNode.options.length === 0 && (
+            <div className="border-t bg-muted/20 shrink-0 text-base text-muted-foreground text-center py-1">
+              No options available for this node
+            </div>
+          )}
         </CardContent>
       </Card>
     </div>
