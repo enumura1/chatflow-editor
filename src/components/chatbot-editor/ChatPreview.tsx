@@ -1,5 +1,4 @@
-// src/components/chatbot-editor/ChatPreview.tsx
-import React, { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { ChatNode } from '../../types/chatbot';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -8,7 +7,7 @@ interface Message {
   type: 'bot' | 'user';
   content: string;
   nodeId?: number;
-  showOptions?: boolean; // 選択肢を表示するかのフラグを追加
+  showOptions?: boolean;
 }
 
 interface ChatPreviewProps {
@@ -25,7 +24,7 @@ const ChatPreview: React.FC<ChatPreviewProps> = ({
   const [chatHistory, setChatHistory] = useState<Message[]>([]);
   const scrollAreaRef = useRef<HTMLDivElement>(null);
   
-  // チャット履歴の構築
+  // Build chat history
   useEffect(() => {
     const buildChatPath = (nodeId: number, path: number[] = []): number[] => {
       if (nodeId === 1) {
@@ -53,8 +52,8 @@ const ChatPreview: React.FC<ChatPreviewProps> = ({
       const node = flow.find(n => n.id === nodeId);
       
       if (node) {
-        // ボットのメッセージを追加
-        // 現在のノードの場合のみ、選択肢を表示するフラグをtrueに設定
+        // Add bot message
+        // Only show options for current node
         history.push({
           type: 'bot',
           content: node.title,
@@ -62,7 +61,7 @@ const ChatPreview: React.FC<ChatPreviewProps> = ({
           showOptions: node.id === currentNode.id
         });
         
-        // 次のノードがある場合、ユーザーの選択肢を追加
+        // Add user selection if there's a next node
         if (i < path.length - 1) {
           const nextNodeId = path[i + 1];
           const selectedOption = node.options.find(opt => opt.nextId === nextNodeId);
@@ -79,7 +78,7 @@ const ChatPreview: React.FC<ChatPreviewProps> = ({
     
     setChatHistory(history);
     
-    // 自動スクロール
+    // Auto-scroll
     setTimeout(() => {
       if (scrollAreaRef.current) {
         scrollAreaRef.current.scrollTop = scrollAreaRef.current.scrollHeight;
@@ -87,11 +86,11 @@ const ChatPreview: React.FC<ChatPreviewProps> = ({
     }, 100);
   }, [currentNode.id, flow]);
   
-  // 選択肢をクリックしたときのハンドラ - チャット履歴も更新する
+  // Option click handler - updates chat history
   const handleOptionClick = (nextId: number) => {
     onOptionClick(nextId);
     
-    // 選択肢が選ばれたら、現在のノードの選択肢表示フラグをfalseに設定
+    // Set showOptions to false for current node after selection
     setChatHistory(prev => 
       prev.map(msg => 
         msg.nodeId === currentNode.id ? { ...msg, showOptions: false } : msg
@@ -106,7 +105,7 @@ const ChatPreview: React.FC<ChatPreviewProps> = ({
           <CardTitle className="text-base">Chat Preview</CardTitle>
         </CardHeader>
         <CardContent className="flex-1 flex flex-col p-0 overflow-hidden">
-          {/* メッセージ部分 - スクロール可能 */}
+          {/* Message area - scrollable */}
           <div className="flex-1 overflow-auto" ref={scrollAreaRef}>
             <div className="p-4 space-y-4">
               {chatHistory.map((message, index) => (
@@ -119,7 +118,7 @@ const ChatPreview: React.FC<ChatPreviewProps> = ({
                       <div className={`bg-blue-100 dark:bg-blue-900/30 p-3 rounded-lg text-gray-800 dark:text-gray-100 ${message.nodeId === currentNode.id ? 'ring-2 ring-blue-300 dark:ring-blue-700' : ''}`}>
                         <div>{message.content}</div>
                         
-                        {/* 選択肢がある場合に表示 */}
+                        {/* Show options if available */}
                         {message.showOptions && currentNode.options.length > 0 && (
                           <div className="mt-3 pt-2 border-t border-blue-200 dark:border-blue-800">
                             {currentNode.options.map((opt, idx) => (
@@ -152,7 +151,7 @@ const ChatPreview: React.FC<ChatPreviewProps> = ({
             </div>
           </div>
           
-          {/* 選択肢がない場合の表示 - フッター部分 */}
+          {/* No options footer */}
           {currentNode.options.length === 0 && (
             <div className="border-t bg-muted/20 shrink-0 text-base text-muted-foreground text-center py-1">
               No options available for this node

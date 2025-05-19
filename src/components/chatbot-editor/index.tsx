@@ -11,35 +11,35 @@ import { ChatbotFlow, ChatNode } from '../../types/chatbot';
 import { Button } from '@/components/ui/button';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 
-// 初期フローデータ
+// Initial flow data - English version
 const initialFlow: ChatbotFlow = [
   {
     id: 1,
-    title: "hello chatbot!!",
+    title: "Welcome to the chatbot!",
     options: [
-      { label: "node1 label", nextId: 2 },
-      { label: "node2 label", nextId: 3 },
-      { label: "node3 label", nextId: 4 }
+      { label: "Option 1", nextId: 2 },
+      { label: "Option 2", nextId: 3 },
+      { label: "Option 3", nextId: 4 }
     ],
     hierarchyPath: "1"
   },
   {
     id: 2,
-    title: "node2 title",
+    title: "Node 2 content",
     options: [],
     parentId: 1,
     hierarchyPath: "1-1"
   },
   {
     id: 3,
-    title: "node3 title",
+    title: "Node 3 content",
     options: [],
     parentId: 1,
     hierarchyPath: "1-2"
   },
   {
     id: 4,
-    title: "node4 title",
+    title: "Node 4 content",
     options: [],
     parentId: 1,
     hierarchyPath: "1-3"
@@ -47,7 +47,7 @@ const initialFlow: ChatbotFlow = [
 ];
 
 const ChatbotEditor: React.FC = () => {
-  // useStateの前に初期フローを階層パスで更新
+  // Update initial flow with hierarchy paths
   const hierarchicalInitialFlow = updateFlowWithHierarchyPaths(initialFlow);
   
   // State
@@ -59,37 +59,37 @@ const ChatbotEditor: React.FC = () => {
   const [isExportOpen, setIsExportOpen] = useState<boolean>(false);
   const [editingOptionIndex, setEditingOptionIndex] = useState<number | null>(null);
   
-  // 現在のノードを取得
+  // Get current node
   const currentNode = flow.find((n) => n.id === currentNodeId) || flow[0];
   
-  // ノードの位置を計算
+  // Calculate node positions
   const nodePositions = generateNodePositions(flow);
   
-  // ノード選択ハンドラ
+  // Node selection handler
   const handleNodeSelect = (nodeId: number) => {
     setCurrentNodeId(nodeId);
   };
   
-  // オプションクリックハンドラ (チャットプレビュー用)
+  // Option click handler (for chat preview)
   const handleOptionClick = (nextId: number) => {
     setCurrentNodeId(nextId);
   };
   
-  // ノード追加ハンドラ
+  // Add node handler
   const handleAddNode = (title: string) => {
     const newId = generateNewId(flow);
     const parentNode = flow.find(node => node.id === currentNodeId);
     
     if (!parentNode) return;
     
-    // 親ノードの階層パスを取得
+    // Get parent path
     const parentPath = parentNode.hierarchyPath || parentNode.id.toString();
     
-    // 同じ親を持つノードの数を数える
+    // Count siblings with the same parent
     const siblings = flow.filter(node => node.parentId === parentNode.id);
     const childIndex = siblings.length + 1;
     
-    // 新しいノードの階層パスを作成
+    // Create hierarchy path
     const hierarchyPath = `${parentPath}-${childIndex}`;
     
     const newNode: ChatNode = {
@@ -100,7 +100,7 @@ const ChatbotEditor: React.FC = () => {
       hierarchyPath: hierarchyPath
     };
   
-    // 親ノードに新しいオプションを追加する
+    // Add new option to parent node
     const updatedParentNode = {
       ...parentNode,
       options: [
@@ -109,7 +109,7 @@ const ChatbotEditor: React.FC = () => {
       ]
     };
     
-    // 更新されたフローを設定
+    // Update flow
     const updatedFlow = flow.map(node => 
       node.id === parentNode.id ? updatedParentNode : node
     );
@@ -119,7 +119,7 @@ const ChatbotEditor: React.FC = () => {
     setIsAddNodeOpen(false);
   };
   
-  // ノード更新ハンドラ
+  // Update node handler
   const handleUpdateNode = (title: string) => {
     const updatedFlow = flow.map(node => 
       node.id === currentNodeId 
@@ -129,26 +129,26 @@ const ChatbotEditor: React.FC = () => {
     setFlow(updatedFlow);
   };
   
-  // オプション追加ダイアログを開く
+  // Open add option dialog
   const handleOpenAddOption = () => {
     setEditingOptionIndex(null);
     setIsAddOptionOpen(true);
   };
   
-  // オプション編集ダイアログを開く
+  // Open edit option dialog
   const handleEditOption = (index: number) => {
     setEditingOptionIndex(index);
     setIsAddOptionOpen(true);
   };
   
-  // オプション保存ハンドラ (追加&編集)
+  // Save option handler (add & edit)
   const handleSaveOption = (label: string, nextId: number) => {
     const updatedFlow = flow.map(node => {
       if (node.id === currentNodeId) {
         let updatedOptions;
         
         if (editingOptionIndex !== null) {
-          // 既存オプションを更新
+          // Update existing option
           updatedOptions = node.options.map((opt, idx) => 
             idx === editingOptionIndex 
               ? { label, nextId } 
@@ -171,7 +171,7 @@ const ChatbotEditor: React.FC = () => {
     setEditingOptionIndex(null);
   };
   
-  // オプション削除ハンドラ
+  // Remove option handler
   const handleRemoveOption = (index: number) => {
     const updatedFlow = flow.map(node => {
       if (node.id === currentNodeId) {
@@ -185,24 +185,24 @@ const ChatbotEditor: React.FC = () => {
     setFlow(updatedFlow);
   };
   
-  // インポートハンドラ
+  // Import handler
   const handleImport = (importedFlow: ChatbotFlow) => {
     setFlow(importedFlow);
     setCurrentNodeId(importedFlow[0].id);
     setIsImportOpen(false);
   };
   
-  // エクスポートボタンクリックハンドラ
+  // Export button click handler
   const handleExportClick = () => {
     setIsExportOpen(true);
   };
   
-  // 実際のエクスポート処理
+  // Actual export handler
   const handleExport = () => {
     exportFlowToFile(flow);
   };
   
-  // 編集するオプションを取得
+  // Get editing option
   const getEditingOption = () => {
     if (editingOptionIndex !== null && currentNode.options[editingOptionIndex]) {
       return currentNode.options[editingOptionIndex];
@@ -214,12 +214,12 @@ const ChatbotEditor: React.FC = () => {
   
   return (
     <div className="flex h-screen w-full bg-background text-foreground p-4 gap-4">
-      {/* 左側: ワークフロー図 (60%) */}
+      {/* Left: Workflow diagram (60%) */}
       <div className="w-3/5 h-full flex flex-col">
         <Card className="h-full flex flex-col overflow-hidden">
           <CardHeader className="py-2 px-4 border-b shrink-0">
             <div className="flex justify-between items-center">
-              <CardTitle className="text-xl">WorkFlow Editor</CardTitle>
+              <CardTitle className="text-xl">Workflow Editor</CardTitle>
               <div className="flex space-x-2">
                 <Button 
                   variant="outline"
@@ -257,9 +257,9 @@ const ChatbotEditor: React.FC = () => {
         </Card>
       </div>
       
-      {/* 右側: チャットプレビューとノード編集 (40%) */}
+      {/* Right: Chat preview and node editor (40%) */}
       <div className="w-2/5 h-full flex flex-col gap-4">
-        {/* チャットプレビュー (上半分) */}
+        {/* Chat preview (top half) */}
         <div className="h-[calc(50%-8px)]">
           <ChatPreview 
             currentNode={currentNode}
@@ -268,7 +268,7 @@ const ChatbotEditor: React.FC = () => {
           />
         </div>
         
-        {/* ノード編集 (下半分) */}
+        {/* Node editor (bottom half) */}
         <div className="h-[calc(50%-8px)]">
           <NodeEditor 
             node={currentNode}
@@ -280,7 +280,7 @@ const ChatbotEditor: React.FC = () => {
         </div>
       </div>
       
-      {/* ダイアログコンポーネント */}
+      {/* Dialog components */}
       <AddNodeDialog 
         open={isAddNodeOpen}
         onClose={() => setIsAddNodeOpen(false)}

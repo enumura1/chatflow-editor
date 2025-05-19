@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import Dialog from './Dialog';
 
 interface AddNodeDialogProps {
@@ -40,33 +40,33 @@ const AddNodeDialog: React.FC<AddNodeDialogProps> = ({
     <Dialog 
       open={open} 
       onClose={onClose}
-      title="新しいノードを追加"
+      title="Add New Node"
       footer={
         <>
           <button 
             className="px-3 py-1 border rounded-md"
             onClick={onClose}
           >
-            キャンセル
+            Cancel
           </button>
           <button 
             className="px-3 py-1 bg-blue-600 text-white rounded-md"
             onClick={handleSubmit}
           >
-            追加
+            Add
           </button>
         </>
       }
     >
       <div className="space-y-4">
         <div className="space-y-2">
-          <label className="text-sm font-medium">表示する文言</label>
+          <label className="text-sm font-medium">Display Text</label>
           <input
             className="w-full px-3 py-2 border rounded-md"
             value={nodeTitle}
             onChange={(e) => setNodeTitle(e.target.value)}
             onKeyDown={handleKeyDown}
-            placeholder="チャットに表示する文言を入力"
+            placeholder="Enter text to display in chat"
             autoFocus
           />
         </div>

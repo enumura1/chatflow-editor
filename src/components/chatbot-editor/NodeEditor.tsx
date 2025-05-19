@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { ChatNode, ChatOption } from '../../types/chatbot';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -22,7 +22,7 @@ const NodeEditor: React.FC<NodeEditorProps> = ({
 }) => {
   const [title, setTitle] = useState(node.title);
   
-  // nodeが変更されたらtitleも更新
+  // Update title when node changes
   useEffect(() => {
     setTitle(node.title);
   }, [node.id, node.title]);
@@ -61,7 +61,7 @@ const NodeEditor: React.FC<NodeEditorProps> = ({
             id="node-title"
             value={title}
             onChange={handleTitleChange}
-            placeholder="ノードのタイトルを入力"
+            placeholder="Enter node title"
             className="w-full"
           />
         </div>
@@ -111,7 +111,7 @@ const NodeEditor: React.FC<NodeEditorProps> = ({
                 
                 {node.options.length === 0 && (
                   <div className="text-gray-500 text-sm p-4 text-center bg-gray-50 rounded-md">
-                    選択肢がありません。「選択肢追加」ボタンから追加できます。
+                    No options available. Use the `Add an option` button to add one.
                   </div>
                 )}
               </div>
