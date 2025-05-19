@@ -15,7 +15,7 @@ import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 const initialFlow: ChatbotFlow = [
   {
     id: 1,
-    title: "Welcome to the chatbot!",
+    title: "Welcome to the chatflow",
     options: [
       { label: "Option 1", nextId: 2 },
       { label: "Option 2", nextId: 3 },
