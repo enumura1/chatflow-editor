@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { ChatNode, ChatOption } from '../../types/chatbot';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -39,7 +39,7 @@ const NodeEditor: React.FC<NodeEditorProps> = ({
     <Card className="h-full flex flex-col overflow-hidden">
       <CardHeader className="py-2 px-4 border-b shrink-0">
         <div className="flex justify-between items-center w-full">
-          <CardTitle className="text-base">
+          <CardTitle className="text-xl">
             {node.hierarchyPath ? `Node ${node.hierarchyPath} Edit` : `Node ${node.id} Edit`}
           </CardTitle>
           <Button 
@@ -52,7 +52,7 @@ const NodeEditor: React.FC<NodeEditorProps> = ({
         </div>
       </CardHeader>
       
-      <CardContent className="p-4 flex-1 flex flex-col gap-4 overflow-hidden">
+      <CardContent className="px-4 pt-1 pb-4 flex-1 flex flex-col gap-2 overflow-hidden">
         <div className="shrink-0">
           <label className="block text-sm font-medium mb-2" htmlFor="node-title">
             Title

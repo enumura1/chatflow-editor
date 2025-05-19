@@ -1,7 +1,3 @@
-// 修正版のCardHeaderコンポーネント
-// これをsrc/components/ui/card.tsxに置き換えるか、
-// または既存のコンポーネントを修正する
-
 import * as React from "react"
 
 import { cn } from "@/lib/utils"
