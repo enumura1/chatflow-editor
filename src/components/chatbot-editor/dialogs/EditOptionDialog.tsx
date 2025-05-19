@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import Dialog from './Dialog';
 import { ChatbotFlow } from '../../../types/chatbot';
 
@@ -37,12 +37,12 @@ const EditOptionDialog: React.FC<EditOptionDialogProps> = ({
   const validateAndSubmit = () => {
     // Validate inputs
     if (!optionLabel.trim()) {
-      setError('選択肢のラベルを入力してください');
+      setError('Please enter an option label');
       return;
     }
     
     if (!nextNodeId) {
-      setError('次のノードIDを入力してください');
+      setError('Please enter a node ID');
       return;
     }
     
@@ -50,7 +50,7 @@ const EditOptionDialog: React.FC<EditOptionDialogProps> = ({
     
     // Check if target node exists
     if (!flow.some(node => node.id === targetNodeId)) {
-      setError('指定されたノードIDが存在しません');
+      setError('The specified node ID does not exist');
       return;
     }
     
@@ -63,20 +63,20 @@ const EditOptionDialog: React.FC<EditOptionDialogProps> = ({
     <Dialog 
       open={open} 
       onClose={onClose}
-      title={isEditing ? "選択肢を編集" : "選択肢を追加"}
+      title={isEditing ? "Edit Option" : "Add Option"}
       footer={
         <>
           <button 
             className="px-3 py-1 border rounded-md"
             onClick={onClose}
           >
-            キャンセル
+            Cancel
           </button>
           <button 
             className="px-3 py-1 bg-blue-600 text-white rounded-md"
             onClick={validateAndSubmit}
           >
-            保存
+            Save
           </button>
         </>
       }
@@ -89,29 +89,29 @@ const EditOptionDialog: React.FC<EditOptionDialogProps> = ({
         )}
         
         <div className="space-y-2">
-          <label className="text-sm font-medium">選択肢ラベル</label>
+          <label className="text-sm font-medium">Option Label</label>
           <input
             className="w-full px-3 py-2 border rounded-md"
             value={optionLabel}
             onChange={(e) => setOptionLabel(e.target.value)}
-            placeholder="選択肢のテキストを入力"
+            placeholder="Enter option text"
             autoFocus
           />
         </div>
         
         <div className="space-y-2">
-          <label className="text-sm font-medium">次のノードID</label>
+          <label className="text-sm font-medium">Next Node ID</label>
           <div className="flex space-x-2">
             <input
               className="w-full px-3 py-2 border rounded-md"
               type="number"
               value={nextNodeId}
               onChange={(e) => setNextNodeId(e.target.value)}
-              placeholder="次に表示するノードのIDを入力"
+              placeholder="Enter ID of the next node to display"
             />
           </div>
           <div className="text-sm text-gray-500">
-            使用可能なID: {flow.map(n => n.id).join(', ')}
+            Available IDs: {flow.map(n => n.id).join(', ')}
           </div>
         </div>
       </div>

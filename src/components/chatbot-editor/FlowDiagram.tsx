@@ -1,4 +1,3 @@
-import React from 'react';
 import { ChatbotFlow, ChatNode, NodePositions } from '../../types/chatbot';
 import { ScrollArea } from '@/components/ui/scroll-area';
 
@@ -9,7 +8,7 @@ interface FlowDiagramProps {
   onNodeSelect: (nodeId: number) => void;
 }
 
-// 階層構造のノードを表すインターフェース
+// Hierarchy tree node interface
 interface TreeNode {
   node: ChatNode;
   depth: number;
@@ -22,23 +21,23 @@ const FlowDiagram: React.FC<FlowDiagramProps> = ({
   currentNodeId,
   onNodeSelect
 }) => {
-  // 階層構造を構築する関数
+  // Build hierarchy structure
   const buildHierarchy = (): TreeNode | null => {
     const rootNode = flow.find(node => node.id === 1);
     if (!rootNode) return null;
     
-    // ノードIDからノードを取得するマップを作成
+    // Create node map for quick lookup
     const nodeMap = flow.reduce<Record<number, ChatNode>>((map, node) => {
       map[node.id] = node;
       return map;
     }, {});
     
-    // 訪問済みノードを追跡して循環参照を防ぐ
+    // Track visited nodes to prevent circular references
     const visited = new Set<number>();
     
-    // 階層構造を再帰的に構築する関数
+    // Recursively build node tree
     const buildNodeTree = (nodeId: number, depth: number, index: number): TreeNode | null => {
-      // 循環参照チェック
+      // Check for circular references
       if (visited.has(nodeId)) return null;
       visited.add(nodeId);
       
@@ -60,14 +59,14 @@ const FlowDiagram: React.FC<FlowDiagramProps> = ({
     return buildNodeTree(rootNode.id, 0, 0);
   };
   
-  // 階層構造からノードを再帰的にレンダリングする関数
+  // Recursively render node from hierarchy
   const renderNode = (item: TreeNode): React.ReactElement => {
     const { node, depth, children } = item;
     
     return (
       <div key={node.id} className="flex flex-col mb-8">
         <div className="flex items-start">
-          {/* インデントと接続線 */}
+          {/* Indentation and connection lines */}
           {depth > 0 && (
             <>
               {Array(depth).fill(0).map((_, i) => (
@@ -77,7 +76,7 @@ const FlowDiagram: React.FC<FlowDiagramProps> = ({
             </>
           )}
           
-          {/* ノード */}
+          {/* Node */}
           <div 
             className={`px-5 py-3 rounded-lg shadow-md cursor-pointer border-2
               ${currentNodeId === node.id 
@@ -86,20 +85,20 @@ const FlowDiagram: React.FC<FlowDiagramProps> = ({
             style={{ minWidth: '240px' }}
             onClick={() => onNodeSelect(node.id)}
           >
-            {/* ノードID - 小さく表示 */}
-            <div className="text-xs font-medium text-gray-600 mb-1">ノード {node.id}</div>
+            {/* Node ID - small display */}
+            <div className="text-xs font-medium text-gray-600 mb-1">Node {node.id}</div>
             
-            {/* ノードタイトル - 大きく目立つように表示 */}
+            {/* Node title - larger, more prominent */}
             <div className="text-base font-bold text-gray-900 mb-2 truncate">{node.title}</div>
             
-            {/* オプション - より視認性を高める */}
+            {/* Options - improved visibility */}
             {node.options.length > 0 && (
               <div className="text-sm text-gray-800 mt-2 border-t border-gray-300 pt-2">
                 {node.options.map((option, optIdx) => (
                   <div key={optIdx} className="flex items-center py-1.5">
                     <span className="mr-2 text-blue-600 font-bold">•</span>
                     <span className="truncate font-medium flex-1">{option.label}</span>
-                    <span className="text-xs bg-gray-100 text-gray-700 px-1.5 py-0.5 rounded ml-2 whitespace-nowrap">→ ノード{option.nextId}</span>
+                    <span className="text-xs bg-gray-100 text-gray-700 px-1.5 py-0.5 rounded ml-2 whitespace-nowrap">→ Node {option.nextId}</span>
                   </div>
                 ))}
               </div>

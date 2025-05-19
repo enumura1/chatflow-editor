@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import { useState, useRef } from 'react';
 import Dialog from './Dialog';
 import { parseImportedJson } from '../utils';
 import { ChatbotFlow } from '../../../types/chatbot';
@@ -25,7 +25,7 @@ const ImportDialog: React.FC<ImportDialogProps> = ({ open, onClose, onImport }) 
         }
       };
       reader.onerror = () => {
-        setError('ファイルの読み込みに失敗しました');
+        setError('Failed to read file');
       };
       reader.readAsText(file);
     }
@@ -39,7 +39,7 @@ const ImportDialog: React.FC<ImportDialogProps> = ({ open, onClose, onImport }) 
       setImportJson('');
       setError(null);
     } else {
-      setError('無効なJSONフォーマットです。ノードの配列が必要です。');
+      setError('Invalid JSON format. Node array is required.');
     }
   };
   
@@ -89,7 +89,7 @@ const ImportDialog: React.FC<ImportDialogProps> = ({ open, onClose, onImport }) 
         />
         
         <div className="space-y-2">
-          <label className="text-sm font-medium">または、JSONを直接貼り付け</label>
+          <label className="text-sm font-medium">Or paste JSON directly</label>
           <textarea
             className="w-full px-3 py-2 border rounded-md"
             value={importJson}
@@ -97,7 +97,7 @@ const ImportDialog: React.FC<ImportDialogProps> = ({ open, onClose, onImport }) 
               setImportJson(e.target.value);
               setError(null);
             }}
-            placeholder='[{"id":1,"title":"例","options":[]}]'
+            placeholder='[{"id":1,"title":"Example","options":[]}]'
             rows={10}
           />
         </div>
