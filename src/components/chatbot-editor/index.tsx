@@ -70,11 +70,6 @@ const ChatbotEditor: React.FC = () => {
     setCurrentNodeId(nodeId);
   };
   
-  // Option click handler (for chat preview)
-  const handleOptionClick = (nextId: number) => {
-    setCurrentNodeId(nextId);
-  };
-  
   // Add node handler
   const handleAddNode = (title: string) => {
     const newId = generateNewId(flow);
@@ -262,9 +257,8 @@ const ChatbotEditor: React.FC = () => {
         {/* Chat preview (top half) */}
         <div className="h-[calc(50%-8px)]">
           <ChatPreview 
-            currentNode={currentNode}
             flow={flow}
-            onOptionClick={handleOptionClick}
+            onNodeSelect={handleNodeSelect}
           />
         </div>
         
