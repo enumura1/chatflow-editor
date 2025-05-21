@@ -1,17 +1,22 @@
-import { useState } from 'react';
+'use client';
+
+import { useState, useCallback, useMemo } from 'react';
+import dynamic from 'next/dynamic';
+import { Button } from '@/components/ui/button';
+import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import FlowDiagram from './FlowDiagram';
 import NodeEditor from './NodeEditor';
 import ChatPreview from './ChatPreview';
-import AddNodeDialog from './dialogs/AddNodeDialog';
-import EditOptionDialog from './dialogs/EditOptionDialog';
-import ImportDialog from './dialogs/ImportDialog';
-import ExportDialog from './dialogs/ExportDialog';
 import { generateNodePositions, generateNewId, exportFlowToFile, updateFlowWithHierarchyPaths } from './utils';
-import { ChatbotFlow, ChatNode } from '../../types/chatbot';
-import { Button } from '@/components/ui/button';
-import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
+import { ChatbotFlow, ChatNode, ChatOption } from '@/types/chatbot';
 
-// Initial flow data - English version
+// Dynamically import dialog components with lazy loading
+const AddNodeDialog = dynamic(() => import('./dialogs/AddNodeDialog'), { ssr: false });
+const EditOptionDialog = dynamic(() => import('./dialogs/EditOptionDialog'), { ssr: false });
+const ImportDialog = dynamic(() => import('./dialogs/ImportDialog'), { ssr: false });
+const ExportDialog = dynamic(() => import('./dialogs/ExportDialog'));
+
+// Initial flow data
 const initialFlow: ChatbotFlow = [
   {
     id: 1,
@@ -46,101 +51,130 @@ const initialFlow: ChatbotFlow = [
   }
 ];
 
-const ChatbotEditor: React.FC = () => {
-  // Update initial flow with hierarchy paths
-  const hierarchicalInitialFlow = updateFlowWithHierarchyPaths(initialFlow);
+// Dialog state type definition
+type DialogState = {
+  addNode: boolean;
+  addOption: boolean;
+  import: boolean;
+  export: boolean;
+};
+
+export default function ChatbotEditor() {
+  // Initialize with hierarchical initial flow
+  const hierarchicalInitialFlow = useMemo(
+    () => updateFlowWithHierarchyPaths(initialFlow),
+    []
+  );
   
-  // State
+  // State management
   const [flow, setFlow] = useState<ChatbotFlow>(hierarchicalInitialFlow);
   const [currentNodeId, setCurrentNodeId] = useState<number>(1);
-  const [isAddNodeOpen, setIsAddNodeOpen] = useState<boolean>(false);
-  const [isAddOptionOpen, setIsAddOptionOpen] = useState<boolean>(false);
-  const [isImportOpen, setIsImportOpen] = useState<boolean>(false);
-  const [isExportOpen, setIsExportOpen] = useState<boolean>(false);
+  const [dialogState, setDialogState] = useState<DialogState>({
+    addNode: false,
+    addOption: false,
+    import: false,
+    export: false
+  });
   const [editingOptionIndex, setEditingOptionIndex] = useState<number | null>(null);
   
-  // Get current node
-  const currentNode = flow.find((n) => n.id === currentNodeId) || flow[0];
+  // Get currently selected node - memoized to prevent recalculation
+  const currentNode = useMemo(() => 
+    flow.find((n) => n.id === currentNodeId) || flow[0],
+    [flow, currentNodeId]
+  );
   
-  // Calculate node positions
-  const nodePositions = generateNodePositions(flow);
+  // Calculate node positions - memoized
+  const nodePositions = useMemo(() => 
+    generateNodePositions(flow),
+    [flow]
+  );
+  
+  // Dialog open/close handler
+  const toggleDialog = useCallback((dialogName: keyof DialogState, isOpen: boolean) => {
+    setDialogState(prev => ({ ...prev, [dialogName]: isOpen }));
+  }, []);
   
   // Node selection handler
-  const handleNodeSelect = (nodeId: number) => {
+  const handleNodeSelect = useCallback((nodeId: number) => {
     setCurrentNodeId(nodeId);
-  };
+  }, []);
   
-  // Add node handler
-  const handleAddNode = (title: string) => {
-    const newId = generateNewId(flow);
-    const parentNode = flow.find(node => node.id === currentNodeId);
+  // Node addition handler
+  const handleAddNode = useCallback((title: string) => {
+    setFlow(prevFlow => {
+      const newId = generateNewId(prevFlow);
+      const parentNode = prevFlow.find(node => node.id === currentNodeId);
+      
+      if (!parentNode) return prevFlow;
+      
+      // Get parent path
+      const parentPath = parentNode.hierarchyPath || parentNode.id.toString();
+      
+      // Count sibling nodes with the same parent
+      const siblings = prevFlow.filter(node => node.parentId === parentNode.id);
+      const childIndex = siblings.length + 1;
+      
+      // Create hierarchy path
+      const hierarchyPath = `${parentPath}-${childIndex}`;
+      
+      // Create new node
+      const newNode: ChatNode = {
+        id: newId,
+        title: title,
+        options: [],
+        parentId: parentNode.id,
+        hierarchyPath: hierarchyPath
+      };
     
-    if (!parentNode) return;
+      // Add new option to parent node
+      const updatedParentNode = {
+        ...parentNode,
+        options: [
+          ...parentNode.options,
+          { label: `Option to ${title}`, nextId: newId }
+        ]
+      };
+      
+      // Update flow
+      const updatedFlow = prevFlow.map(node => 
+        node.id === parentNode.id ? updatedParentNode : node
+      );
+      
+      // Set the new node as selected
+      setCurrentNodeId(newId);
+      
+      return [...updatedFlow, newNode];
+    });
     
-    // Get parent path
-    const parentPath = parentNode.hierarchyPath || parentNode.id.toString();
-    
-    // Count siblings with the same parent
-    const siblings = flow.filter(node => node.parentId === parentNode.id);
-    const childIndex = siblings.length + 1;
-    
-    // Create hierarchy path
-    const hierarchyPath = `${parentPath}-${childIndex}`;
-    
-    const newNode: ChatNode = {
-      id: newId,
-      title: title,
-      options: [],
-      parentId: parentNode.id,
-      hierarchyPath: hierarchyPath
-    };
+    toggleDialog('addNode', false);
+  }, [currentNodeId, toggleDialog]);
   
-    // Add new option to parent node
-    const updatedParentNode = {
-      ...parentNode,
-      options: [
-        ...parentNode.options,
-        { label: `Option to ${title}`, nextId: newId }
-      ]
-    };
-    
-    // Update flow
-    const updatedFlow = flow.map(node => 
-      node.id === parentNode.id ? updatedParentNode : node
-    );
-    
-    setFlow([...updatedFlow, newNode]);
-    setCurrentNodeId(newId);
-    setIsAddNodeOpen(false);
-  };
-  
-  // Update node handler
-  const handleUpdateNode = (title: string) => {
-    const updatedFlow = flow.map(node => 
+  // Node update handler
+  const handleUpdateNode = useCallback((title: string) => {
+    setFlow(prevFlow => prevFlow.map(node => 
       node.id === currentNodeId 
         ? { ...node, title } 
         : node
-    );
-    setFlow(updatedFlow);
-  };
+    ));
+  }, [currentNodeId]);
   
-  // Open add option dialog
-  const handleOpenAddOption = () => {
+  // Open add option dialog handler
+  const handleOpenAddOption = useCallback(() => {
     setEditingOptionIndex(null);
-    setIsAddOptionOpen(true);
-  };
+    toggleDialog('addOption', true);
+  }, [toggleDialog]);
   
-  // Open edit option dialog
-  const handleEditOption = (index: number) => {
+  // Open edit option dialog handler
+  const handleEditOption = useCallback((index: number) => {
     setEditingOptionIndex(index);
-    setIsAddOptionOpen(true);
-  };
+    toggleDialog('addOption', true);
+  }, [toggleDialog]);
   
-  // Save option handler (add & edit)
-  const handleSaveOption = (label: string, nextId: number) => {
-    const updatedFlow = flow.map(node => {
+  // Option save handler (add & edit)
+  const handleSaveOption = useCallback((label: string, nextId: number) => {
+    setFlow(prevFlow => prevFlow.map(node => {
       if (node.id === currentNodeId) {
-        let updatedOptions;
+        let updatedOptions: ChatOption[];
         
         if (editingOptionIndex !== null) {
           // Update existing option
@@ -150,6 +184,7 @@ const ChatbotEditor: React.FC = () => {
               : opt
           );
         } else {
+          // Add new option
           updatedOptions = [
             ...node.options, 
             { label, nextId }
@@ -159,53 +194,43 @@ const ChatbotEditor: React.FC = () => {
         return { ...node, options: updatedOptions };
       }
       return node;
-    });
+    }));
     
-    setFlow(updatedFlow);
-    setIsAddOptionOpen(false);
+    toggleDialog('addOption', false);
     setEditingOptionIndex(null);
-  };
+  }, [currentNodeId, editingOptionIndex, toggleDialog]);
   
-  // Remove option handler
-  const handleRemoveOption = (index: number) => {
-    const updatedFlow = flow.map(node => {
+  // Option removal handler
+  const handleRemoveOption = useCallback((index: number) => {
+    setFlow(prevFlow => prevFlow.map(node => {
       if (node.id === currentNodeId) {
         const newOptions = [...node.options];
         newOptions.splice(index, 1);
         return { ...node, options: newOptions };
       }
       return node;
-    });
-    
-    setFlow(updatedFlow);
-  };
+    }));
+  }, [currentNodeId]);
   
   // Import handler
-  const handleImport = (importedFlow: ChatbotFlow) => {
+  const handleImport = useCallback((importedFlow: ChatbotFlow) => {
     setFlow(importedFlow);
     setCurrentNodeId(importedFlow[0].id);
-    setIsImportOpen(false);
-  };
+    toggleDialog('import', false);
+  }, [toggleDialog]);
   
-  // Export button click handler
-  const handleExportClick = () => {
-    setIsExportOpen(true);
-  };
-  
-  // Actual export handler
-  const handleExport = () => {
+  // Export handler
+  const handleExport = useCallback(() => {
     exportFlowToFile(flow);
-  };
+  }, [flow]);
   
-  // Get editing option
-  const getEditingOption = () => {
+  // Get currently editing option
+  const editingOption = useMemo(() => {
     if (editingOptionIndex !== null && currentNode.options[editingOptionIndex]) {
       return currentNode.options[editingOptionIndex];
     }
     return null;
-  };
-  
-  const editingOption = getEditingOption();
+  }, [currentNode.options, editingOptionIndex]);
   
   return (
     <div className="flex h-screen w-full bg-background text-foreground p-4 gap-4">
@@ -219,21 +244,21 @@ const ChatbotEditor: React.FC = () => {
                 <Button 
                   variant="outline"
                   className="bg-blue-50 hover:bg-blue-100 border-blue-200 text-blue-800 px-4 py-2 h-auto text-sm font-medium"
-                  onClick={() => setIsAddNodeOpen(true)}
+                  onClick={() => toggleDialog('addNode', true)}
                 >
                   Add Node
                 </Button>
                 <Button 
                   variant="outline"
                   className="bg-blue-50 hover:bg-blue-100 border-blue-200 text-blue-800 px-4 py-1 h-auto text-sm font-medium"
-                  onClick={handleExportClick}
+                  onClick={() => toggleDialog('export', true)}
                 >
                   Export
                 </Button>
                 <Button 
                   variant="outline"
                   className="bg-blue-50 hover:bg-blue-100 border-blue-200 text-blue-800 px-4 py-1 h-auto text-sm font-medium"
-                  onClick={() => setIsImportOpen(true)}
+                  onClick={() => toggleDialog('import', true)}
                 >
                   Import
                 </Button>
@@ -254,7 +279,7 @@ const ChatbotEditor: React.FC = () => {
       
       {/* Right: Chat preview and node editor (40%) */}
       <div className="w-2/5 h-full flex flex-col gap-4">
-        {/* Chat preview (top half) */}
+        {/* Chat preview (upper half) */}
         <div className="h-[calc(50%-8px)]">
           <ChatPreview 
             flow={flow}
@@ -262,7 +287,7 @@ const ChatbotEditor: React.FC = () => {
           />
         </div>
         
-        {/* Node editor (bottom half) */}
+        {/* Node editor (lower half) */}
         <div className="h-[calc(50%-8px)]">
           <NodeEditor 
             node={currentNode}
@@ -274,40 +299,46 @@ const ChatbotEditor: React.FC = () => {
         </div>
       </div>
       
-      {/* Dialog components */}
-      <AddNodeDialog 
-        open={isAddNodeOpen}
-        onClose={() => setIsAddNodeOpen(false)}
-        onAddNode={handleAddNode}
-      />
+      {/* Dialog components - only rendered when needed */}
+      {dialogState.addNode && (
+        <AddNodeDialog 
+          open={dialogState.addNode}
+          onClose={() => toggleDialog('addNode', false)}
+          onAddNode={handleAddNode}
+        />
+      )}
       
-      <EditOptionDialog 
-        open={isAddOptionOpen}
-        onClose={() => {
-          setIsAddOptionOpen(false);
-          setEditingOptionIndex(null);
-        }}
-        flow={flow}
-        initialLabel={editingOption?.label || ''}
-        initialNextId={editingOption?.nextId.toString() || ''}
-        isEditing={editingOptionIndex !== null}
-        onSaveOption={handleSaveOption}
-      />
+      {dialogState.addOption && (
+        <EditOptionDialog 
+          open={dialogState.addOption}
+          onClose={() => {
+            toggleDialog('addOption', false);
+            setEditingOptionIndex(null);
+          }}
+          flow={flow}
+          initialLabel={editingOption?.label || ''}
+          initialNextId={editingOption?.nextId.toString() || ''}
+          isEditing={editingOptionIndex !== null}
+          onSaveOption={handleSaveOption}
+        />
+      )}
       
-      <ImportDialog 
-        open={isImportOpen}
-        onClose={() => setIsImportOpen(false)}
-        onImport={handleImport}
-      />
+      {dialogState.import && (
+        <ImportDialog 
+          open={dialogState.import}
+          onClose={() => toggleDialog('import', false)}
+          onImport={handleImport}
+        />
+      )}
       
-      <ExportDialog 
-        open={isExportOpen}
-        onClose={() => setIsExportOpen(false)}
-        flow={flow}
-        onExport={handleExport}
-      />
+      {dialogState.export && (
+        <ExportDialog 
+          open={dialogState.export}
+          onClose={() => toggleDialog('export', false)}
+          flow={flow}
+          onExport={handleExport}
+        />
+      )}
     </div>
   );
-};
-
-export default ChatbotEditor;
+}
